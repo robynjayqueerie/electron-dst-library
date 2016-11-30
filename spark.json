@@ -1,0 +1,7 @@
+{
+  "name": "electron-dst-library",
+  "author": "Robyn Hannah <rhannah@nrie.com.au>",
+  "license": "MIT",
+  "version": "1.0.00",
+  "description": "A basic class library which implements daylight saving time functions for Particle devices"
+}
