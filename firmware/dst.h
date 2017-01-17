@@ -2,7 +2,9 @@
 
 #define secsDay 3600*24		// seconds in a day
 #define secsWeek 3600*24*7	// seconds in week
-
+/*
+	Rev 1.1	Jan 17.	Error clocking over to new year 
+*/
 /**
 	DST works from two arrays a DST start and a DST end array.
 	DST accepts pointers to the arrays so the actual names are not important but
@@ -58,9 +60,9 @@ char* cPtr;
 	// set up for the 1st day of the given month this year
 	myTime.tm_sec = 0;
 	myTime.tm_min = 0;
-	myTime.tm_hour = cPtr[3];//rule[3];
+	myTime.tm_hour = cPtr[3];
 	myTime.tm_mday = 1;
-	myTime.tm_mon = cPtr[2] - 1;//rule[2] - 1;
+	myTime.tm_mon = cPtr[2] - 1;
 	if(nextYear)myTime.tm_year = Time.year() - 1900 + 1;
 	else myTime.tm_year = Time.year() - 1900;
 	tp = &myTime;
@@ -93,11 +95,32 @@ bool dstSet;
 	// get DST end seconds for this year
 	timeDSTEnd = getDSTSecs(eDST,false);
 	// if the DST end time has already past then we need to get it for next year
-	if(timeDSTEnd < timeNow)timeDSTEnd = getDSTSecs(eDST,true);
-	if((Time.local() >= timeDSTStart) && (Time.local() <= timeDSTEnd)){
-		// we are in DST country, if DST was previously set then reset it
-		if(dstSet)Time.beginDST();
-		return true;
+	if(timeDSTEnd < timeNow){
+		timeDSTEnd = getDSTSecs(eDST,true);
+		if((Time.local() >= timeDSTStart) && (Time.local() <= timeDSTEnd)){
+			// we are in DST country, if DST was previously set then reset it
+			if(dstSet)Time.beginDST();
+			return true;
+		}
+	}
+	else{
+		/* current time is less than end time for this year
+			if DST start is greater than DST end then we are in DST country
+			since DST must have started last year			*/
+		if(timeDSTStart > timeDSTEnd){
+			if(dstSet)Time.beginDST();
+			return true;
+		}		
+		else{
+			/*	this is an odd possibility that DST started this year and has 
+					not finished even though DST end is this year. Probably no one
+					does this but to be sure to be sure       */
+			if((Time.local() >= timeDSTStart) && (Time.local() <= timeDSTEnd)){
+				// we are in DST country, if DST was previously set then reset it
+				if(dstSet)Time.beginDST();
+				return true;
+			}
+		}
 	}
 	return false;
 }
